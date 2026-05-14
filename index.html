@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BSV — Founder Prioritization Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@300;400;500&family=Geist:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f7f6f2;--paper:#ffffff;--ink:#0d0d0e;--ink2:#1a1a1c;
+  --rule:#e2e0d8;--rule2:#c8c5bb;--muted:#888880;--faint:#b8b5ac;
+  --serif:'Instrument Serif',serif;--mono:'DM Mono',monospace;--sans:'Geist',sans-serif;
+  --s:#1a5c3a;--s-bg:#e8f5ee;--a:#1a3a5c;--a-bg:#e8f0f8;
+  --b:#5c4a1a;--b-bg:#f8f0e8;--c:#5c1a1a;--c-bg:#f8e8e8;
+  --c1:#2d6a4f;--c2:#1d3557;--c3:#8b2fc9;--c4:#c77d1a;--c5:#b5263e;
+}
+html{font-size:13px;-webkit-font-smoothing:antialiased}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);min-height:100vh}
+.hd{background:var(--ink);color:#f0ede4;padding:18px 32px;display:grid;grid-template-columns:1fr auto;align-items:center;border-bottom:1px solid #333;position:sticky;top:0;z-index:100}
+.hd-title{font-family:var(--serif);font-size:20px;font-style:italic;letter-spacing:-.02em}
+.hd-sub{font-family:var(--mono);font-size:10px;color:#888;letter-spacing:.1em;text-transform:uppercase;margin-top:2px}
+.hd-right{font-family:var(--mono);font-size:10px;color:#666;text-align:right;line-height:1.7}
+.weight-bar{background:var(--paper);border-bottom:1px solid var(--rule);padding:12px 32px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.wlbl{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+.wg{display:flex;align-items:center;gap:7px}
+.wd{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.wn{font-family:var(--mono);font-size:10px;color:var(--ink2);white-space:nowrap}
+.wi{width:42px;padding:3px 6px;border:1px solid var(--rule2);border-radius:3px;font-family:var(--mono);font-size:11px;text-align:center;background:var(--bg);color:var(--ink);outline:none}
+.wi:focus{border-color:var(--ink)}
+.wtot{font-family:var(--mono);font-size:11px;margin-left:auto}.wok{color:var(--c1)}.wbad{color:var(--c)}
+.rbtn{padding:5px 12px;border-radius:3px;border:1px solid var(--ink);background:var(--ink);color:#f0ede4;font-family:var(--mono);font-size:10px;letter-spacing:.06em;cursor:pointer}
+.rbtn:hover{background:#1a1a1c}
+.filter-bar{background:var(--bg);border-bottom:1px solid var(--rule);padding:10px 32px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.fb-lbl{font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.fbtn{padding:4px 10px;border-radius:2px;border:1px solid var(--rule);background:transparent;color:var(--muted);font-family:var(--mono);font-size:10px;cursor:pointer;transition:all .15s}
+.fbtn:hover{border-color:var(--rule2);color:var(--ink)}
+.fbtn.on{background:rgba(29,53,87,.08);border-color:rgba(29,53,87,.3);color:var(--a)}
+.tbl-wrap{padding:20px 32px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:900px}
+thead tr{border-bottom:2px solid var(--ink)}
+thead th{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);padding:7px 8px;text-align:left;white-space:nowrap;cursor:pointer;user-select:none}
+thead th:hover{color:var(--ink)}
+thead th.sorted{color:var(--ink)}
+tbody tr{border-bottom:1px solid var(--rule);transition:background .1s;cursor:pointer}
+tbody tr:hover{background:rgba(0,0,0,.022)}
+tbody tr.exp{background:#faf9f6}
+td{padding:12px 8px;vertical-align:top}
+td.rnk{font-family:var(--mono);font-size:20px;font-weight:300;color:var(--faint);text-align:center;vertical-align:middle;width:36px}
+.r1{color:var(--ink);font-weight:500}
+td.co{vertical-align:middle}
+.co-name{font-family:var(--serif);font-size:16px;letter-spacing:-.01em}
+.co-url{font-family:var(--mono);font-size:9px;color:var(--faint);margin-top:1px}
+.co-track{font-family:var(--mono);font-size:9px;padding:1px 5px;border-radius:2px;margin-top:3px;display:inline-block}
+.track1{background:rgba(29,53,87,.08);color:var(--a)}
+.track2{background:rgba(45,106,79,.08);color:var(--c1)}
+td.founders{vertical-align:top;min-width:160px;max-width:220px}
+.fn{font-size:12px;color:var(--ink2);line-height:1.4;font-weight:500}
+.frole{font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:1px;line-height:1.3}
+.sc{text-align:center;vertical-align:middle;min-width:44px}
+.sv{font-family:var(--mono);font-size:12px;font-weight:500;display:block;text-align:center}
+.bar{height:2px;background:var(--rule);border-radius:1px;margin-top:3px;overflow:hidden}
+.bf{height:100%;border-radius:1px}
+td.tot{text-align:center;vertical-align:middle}
+.tb{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;font-family:var(--mono);font-size:14px;font-weight:500;border:2px solid currentColor}
+.tier-b{display:inline-block;padding:2px 7px;border-radius:2px;font-family:var(--mono);font-size:9px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;margin-top:3px}
+.bsv-badge{font-family:var(--mono);font-size:9px;padding:2px 6px;border-radius:2px;background:rgba(45,106,79,.1);color:var(--c1);border:1px solid rgba(45,106,79,.2);margin-left:4px}
+.exp-tr{display:none}
+.exp-tr.show{display:table-row}
+.exp-td{padding:0 8px 18px 44px;background:#faf9f6;border-bottom:2px solid var(--rule)}
+.exp-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:12px}
+.ec{background:var(--paper);border:1px solid var(--rule);border-radius:3px;padding:10px 12px}
+.ec-lbl{font-family:var(--mono);font-size:8px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:4px}
+.ec-val{font-family:var(--mono);font-size:22px;font-weight:500;line-height:1}
+.ec-note{font-size:11px;color:var(--ink2);margin-top:5px;line-height:1.4}
+.exp-thesis{margin-top:8px;padding:12px 14px;background:var(--paper);border:1px solid var(--rule);border-left:3px solid var(--ink);border-radius:0 3px 3px 0}
+.et-lbl{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:4px}
+.et-txt{font-family:var(--serif);font-size:13px;font-style:italic;color:var(--ink2);line-height:1.5}
+.flags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.flag{padding:2px 8px;border-radius:2px;font-family:var(--mono);font-size:9px;border:1px solid var(--rule);color:var(--muted)}
+.fg{color:var(--c1);border-color:rgba(45,106,79,.22);background:rgba(45,106,79,.06)}
+.fa{color:var(--c4);border-color:rgba(199,125,26,.22);background:rgba(199,125,26,.06)}
+.fr{color:var(--c);border-color:rgba(92,26,26,.18);background:rgba(92,26,26,.04)}
+.summary{background:var(--paper);border-top:2px solid var(--ink);padding:14px 32px;display:flex;align-items:center;gap:20px}
+.si{text-align:center}.sv2{font-family:var(--mono);font-size:17px;font-weight:500}.sl{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-top:2px}
+.sdiv{width:1px;height:28px;background:var(--rule)}
+</style>
+</head>
+<body>
+<header class="hd">
+  <div>
+    <div class="hd-title">Founder Prioritization Dashboard</div>
+    <div class="hd-sub">BSV AI Fellow · All 13 Companies · LinkedIn · GitHub · Crunchbase</div>
+  </div>
+  <div class="hd-right">Basis Set Ventures<br>Track 1 + Track 2<br><span id="hd-date"></span></div>
+</header>
+<div class="weight-bar">
+  <span class="wlbl">Weights</span>
+  <div class="wg"><div class="wd" style="background:var(--c1)"></div><div class="wn">Founder–Mkt Fit</div><input class="wi" id="w0" type="number" min="0" max="100" value="35"></div>
+  <div class="wg"><div class="wd" style="background:var(--c2)"></div><div class="wn">Market Opp</div><input class="wi" id="w1" type="number" min="0" max="100" value="25"></div>
+  <div class="wg"><div class="wd" style="background:var(--c3)"></div><div class="wn">Product Depth</div><input class="wi" id="w2" type="number" min="0" max="100" value="20"></div>
+  <div class="wg"><div class="wd" style="background:var(--c4)"></div><div class="wn">Execution</div><input class="wi" id="w3" type="number" min="0" max="100" value="15"></div>
+  <div class="wg"><div class="wd" style="background:var(--c5)"></div><div class="wn">Education ↓</div><input class="wi" id="w4" type="number" min="0" max="100" value="5"></div>
+  <div class="wtot">Total: <span id="wt" class="wok">100</span></div>
+  <button class="rbtn" onclick="recalc()">Recalculate →</button>
+</div>
+<div class="filter-bar">
+  <span class="fb-lbl">Filter:</span>
+  <button class="fbtn on" onclick="setF('all',this)">All 13</button>
+  <button class="fbtn" onclick="setF('track2',this)">Track 2 — Agentic GTM</button>
+  <button class="fbtn" onclick="setF('track1',this)">Track 1 — Developer Tools</button>
+  <button class="fbtn" onclick="setF('bsv',this)">BSV Portfolio</button>
+  <button class="fbtn" onclick="setF('s',this)">S-Tier</button>
+  <button class="fbtn" onclick="setF('a',this)">A-Tier+</button>
+</div>
+<div class="tbl-wrap">
+<table id="tbl">
+<thead><tr>
+  <th style="width:36px">#</th>
+  <th onclick="srt('name')">Company</th>
+  <th>Founders</th>
+  <th onclick="srt(0)" class="sorted">Founder Fit ↓</th>
+  <th onclick="srt(1)">Market</th>
+  <th onclick="srt(2)">Product</th>
+  <th onclick="srt(3)">Execution</th>
+  <th onclick="srt(4)">Education</th>
+  <th onclick="srt('total')">Score</th>
+  <th>Tier</th>
+</tr></thead>
+<tbody id="tb"></tbody>
+</table>
+</div>
+<div class="summary">
+  <div class="si"><div class="sv2" id="sn">—</div><div class="sl">Shown</div></div>
+  <div class="sdiv"></div>
+  <div class="si"><div class="sv2" id="stop">—</div><div class="sl">Top Pick</div></div>
+  <div class="sdiv"></div>
+  <div class="si"><div class="sv2" id="ss">—</div><div class="sl">S-Tier</div></div>
+  <div class="sdiv"></div>
+  <div class="si"><div class="sv2" id="sa">—</div><div class="sl">A-Tier</div></div>
+  <div class="sdiv"></div>
+  <div class="si"><div class="sv2" id="savg">—</div><div class="sl">Avg Score</div></div>
+  <div class="sdiv"></div>
+  <div class="si" style="flex:1;text-align:left;padding-left:8px">
+    <div class="sl">Thesis</div>
+    <div style="font-family:var(--serif);font-size:12px;font-style:italic;color:var(--muted);margin-top:2px">"AI shifts from model-centric to workflow-centric. Value accrues to teams embedding AI in durable workflows." — Education weighted lowest per BSV note.</div>
+  </div>
+</div>
+<script>
+document.getElementById('hd-date').textContent=new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+const D=[
+{name:"Vizcom",url:"vizcom.com",track:"track2",bsv:true,scores:[10,9,9,10,7],
+founders:[{n:"Jordan Taylor",r:"CEO · Ex-NVIDIA Industrial Designer · Honda R&D"},{n:"Kaelan Richards",r:"CTO · Ex-SWE United Wholesale Mortgage"}],
+detail:{exp1:"Industrial Designer @ NVIDIA (2018–21) → Advance Design @ Honda R&D Americas (2016–18). Transportation Design, College for Creative Studies.",exp2:"SWE @ United Wholesale Mortgage (2018–21). Michigan State University. Built Vizcom as side project.",funding:"$52.5M — Seed BSV/Unusual ('23) → $20M Series A Index ('24) → $27M Series B Radical Ventures ('26)",github:"SaaS product — 700K+ designer users, Fortune 500 clients (Ford, Target, Dell, Estée Lauder)",worked:"Jordan domain expert + Kaelan technical co-founder. Classic designer + engineer pairing built from scratch.",thesis:"Jordan lived the exact pain he's solving — years as an industrial designer at NVIDIA and Honda before founding Vizcom. Product wasn't built from a market map; it came from personal workflow frustration. Clearest founder-market fit in the list. BSV backed at seed, Jensen Huang demoed at SIGGRAPH 2023.",flags:[{t:"Deep domain expertise (NVIDIA designer)",c:"fg"},{t:"BSV portfolio company",c:"fg"},{t:"$52.5M raised",c:"fg"},{t:"700K+ designers, Fortune 500 clients",c:"fg"},{t:"Radical Ventures Series B (Jan 2026)",c:"fg"},{t:"Newell Brands lists Vizcom in job requirements",c:"fg"}]}},
+{name:"Mem0",url:"mem0.ai",track:"track1",bsv:false,scores:[9,9,9,9,7],
+founders:[{n:"Taranjeet Singh",r:"CEO · Sr PM Khatabook (YC S18) · Built GPT app store (1M+ users)"},{n:"Deshraj Yadav",r:"CTO · Tesla Autopilot AI Platform Lead · Georgia Tech MS CS"}],
+detail:{exp1:"Deshraj: Led AI Platform at Tesla Autopilot — large-scale training, model eval, monitoring for FSD. Creator of EvalAI (Georgia Tech thesis). Papers at CVPR, ECCV. Snap Research Scholarship.",exp2:"Taranjeet: Sr PM Khatabook (YC S18). Built first GPT app store (1M+ users). SWE at Paytm. Co-created EvalAI with Deshraj. Built Embedchain (8.9K GitHub stars).",funding:"$24.5M — YC S24 + GitHub + Peak XV Partners (Series A)",github:"23K+ stars (mem0ai/mem0) — one of strongest GitHub signals in list",worked:"✓ Co-created EvalAI together as Georgia Tech grad students. Deepest pre-founding collaboration in the list.",thesis:"Deshraj built AI training and evaluation infrastructure at Tesla Autopilot — understands ML infra at real scale. Taranjeet built consumer AI products (1M users). Together they diagnosed the problem precisely: stateless LLMs can't power useful long-running agents. 23K GitHub stars validates thesis empirically. Memory is foundational infrastructure for AI agents, not a feature.",flags:[{t:"Tesla Autopilot AI Platform Lead",c:"fg"},{t:"23K+ GitHub stars",c:"fg"},{t:"YC S24 + Peak XV + GitHub backing",c:"fg"},{t:"Co-created EvalAI at Georgia Tech together",c:"fg"},{t:"Memory may become platform-native over time",c:"fa"}]}},
+{name:"Rasa",url:"rasa.community",track:"track1",bsv:false,scores:[9,8,9,9,9],
+founders:[{n:"Alan Nichol",r:"CTO · PhD Engineering Cambridge (ML) · Prior Techstars conversational startup"},{n:"Alexander Weidauer",r:"CEO · Business dev + strategy"},{n:"Tom Bocklisch",r:"Principal Architect · ML researcher, co-authored Rasa NLU (arXiv 2017)"}],
+detail:{exp1:"Alan Nichol: PhD Engineering, Cambridge (ML focus — simulating small molecules). Co-founder + CTO of Techstars-backed productivity startup with conversational AI angle. Deep NLP expertise since 2014–15.",exp2:"Tom Bocklisch: Co-published original Rasa NLU paper on arXiv (2017) — this is how company launched, through academic OSS. ML researcher + software engineer. Alexander Weidauer: Enterprise sales + business strategy.",funding:"$80M+ total — a16z, Accel, Google Ventures, PayPal Ventures, StepStone. Founded Berlin 2016.",github:"~19K stars (RasaHQ/rasa). 30M+ monthly downloads at peak. Strong enterprise community.",worked:"✓ Co-founded together 2016, built through multiple funding rounds. 9+ years co-founder durability.",thesis:"Alan's Cambridge ML PhD + prior conversational startup experience makes him one of the technically deepest founders in this list. OSS-first GTM (19K GitHub stars, academic paper launch) built genuine developer community before enterprise sales. CALM architecture separates language from execution — real technical differentiator for enterprise. More mature company = less early-stage upside.",flags:[{t:"Cambridge PhD (ML) + Techstars conversational startup",c:"fg"},{t:"19K GitHub stars, 30M monthly downloads peak",c:"fg"},{t:"$80M+ raised from a16z, Accel, GV",c:"fg"},{t:"9+ years co-founder durability",c:"fg"},{t:"More mature — less early-stage upside",c:"fa"},{t:"Enterprise conversational AI cycles are slow",c:"fa"}]}},
+{name:"Parasail",url:"parasail.io",track:"track1",bsv:true,scores:[9,8,8,9,7],
+founders:[{n:"Mike Henry",r:"CEO · Founded Mythic ($165M raised) · Interim CPO Groq · PhD EE Virginia Tech"},{n:"Tim Harris",r:"Co-founder · CEO Swift Navigation ($250M raised)"}],
+detail:{exp1:"Mike Henry: Founded Mythic (2012) — AI inference chip co that raised $165M. Interim CPO at Groq. PhD EE Virginia Tech. Entire career in AI hardware + inference infrastructure.",exp2:"Tim Harris: CEO + Founder of Swift Navigation — precision GPS for autonomous vehicles, $250M raised in VC.",funding:"$10M Seed (Apr 2025) — Basis Set Ventures (lead), Threshold Ventures, Buckley Ventures, Black Opal Ventures",github:"N/A — infra platform. 2.5B+ daily tokens on network.",worked:"AI industry veterans — new co-founding partnership. Both bring prior company-building experience at scale.",thesis:"Mike Henry is a rare 'full-stack credible' AI infrastructure founder — from chip design (Mythic) to inference software (Groq CPO) to deployment network (Parasail). Tim Harris adds enterprise go-to-market credibility from Swift Navigation. BSV-backed. Key risk: AWS, GCP, CoreWeave all compete for GPU compute.",flags:[{t:"BSV portfolio (lead investor at seed)",c:"fg"},{t:"Mythic founder ($165M raised)",c:"fg"},{t:"Swift Navigation ($250M raised)",c:"fg"},{t:"Groq CPO experience",c:"fg"},{t:"GPU compute market highly competitive",c:"fa"}]}},
+{name:"Tigris Data",url:"tigrisdata.com",track:"track1",bsv:true,scores:[9,8,8,9,7],
+founders:[{n:"Ovais Tariq",r:"CEO · Head of Storage Infra, Uber (6 yrs) · Built Docstore"},{n:"Himank Chaudhary",r:"CTO · Storage Infra, Uber · SUNY Buffalo"},{n:"Yevgeniy Firsov",r:"Chief Architect · Meta (6 yrs storage infra)"}],
+detail:{exp1:"Ovais Tariq: Head of Storage Infrastructure at Uber for 6 years. Built Docstore — Uber's internal general-purpose DB platform solving developer fragmentation at massive scale. Infrastructure Engineering Lead at Lithium Technologies prior.",exp2:"Himank Chaudhary: Storage infra engineering at Uber, SUNY Buffalo CS. Yevgeniy Firsov: 6 years storage infra at Meta before Tigris. All three built this product's thesis internally at Uber before founding.",funding:"$25M — Seed (a16z) + Series A (Spark Capital lead, a16z + BSV continued)",github:"~2.5K stars (tigrisdata-community). S3-compatible globally distributed object storage.",worked:"✓ All three built storage infrastructure together at Uber. Tightest co-founder working history in the list.",thesis:"Ovais spent 6 years as Uber's Head of Storage Infra and literally built an internal version of this product. The team didn't find a market gap — they solved their own infrastructure pain at Uber, then commercialized it. a16z + Spark backing. BSV portfolio. Risk: AWS/GCP/Azure improving object storage for AI workloads.",flags:[{t:"Built this product internally at Uber first",c:"fg"},{t:"BSV portfolio company",c:"fg"},{t:"a16z + Spark Capital backing",c:"fg"},{t:"All 3 founders worked together at Uber",c:"fg"},{t:"Cloud giants commoditization risk",c:"fa"}]}},
+{name:"BAML / Boundary",url:"boundaryml.com",track:"track1",bsv:false,scores:[8,8,8,8,6],
+founders:[{n:"Vaibhav Gupta",r:"CEO · 10 yrs AI @ Google AR, Microsoft HoloLens, D.E. Shaw"},{n:"Aaron Villalpando",r:"CTO · SWE · UT Austin · Former YouTuber"}],
+detail:{exp1:"Vaibhav Gupta: 10 years AI/ML performance optimization at Google Augmented Reality, Microsoft HoloLens, D.E. Shaw. Deep computer vision and AI systems expertise.",exp2:"Aaron Villalpando: Software engineer, former YouTuber. UT Austin. Together: 3.5 years, 12 pivots before finding BAML. Strong co-founder resilience signal.",funding:"YC W23 (seed, undisclosed). Growing developer user base with paying enterprise customers.",github:"~9K stars (BoundaryML/baml). Type-safe LLM programming language with polyglot support.",worked:"✓ 3.5 years, 12 pivots together without breaking partnership. One of strongest co-founder durability signals.",thesis:"Vaibhav brings 10 years of serious AI engineering from Google, MSFT, D.E. Shaw. 12 pivots over 3.5 years is a feature — shows they stayed together through failure. BAML addresses real pain (structured LLM outputs, type safety) that becomes more acute as AI moves to production. Risk: OpenAI/Anthropic may solve structured outputs natively.",flags:[{t:"10 yrs Google/MSFT/D.E. Shaw AI experience",c:"fg"},{t:"12 pivots together — strong durability",c:"fg"},{t:"9K GitHub stars",c:"fg"},{t:"YC W23",c:"fg"},{t:"Model providers may solve structured outputs natively",c:"fa"}]}},
+{name:"Flint (k12)",url:"flintk12.com",track:"track2",bsv:false,scores:[8,7,8,9,5],
+founders:[{n:"Michelle Lim",r:"CEO · Founding Engineer + Head of Growth, Warp (Sequoia)"},{n:"Max Levenson",r:"CTO · Staff TLM, Nuro (autonomous vehicles)"}],
+detail:{exp1:"Michelle Lim: Founding engineer at Warp (Sequoia-backed). Scaled from 0 to 100K+ developers. Led growth engineering + AI agents. First engineer to head of growth.",exp2:"Max Levenson: Staff Tech Lead Manager at Nuro — led simulation and infrastructure for autonomous vehicle systems. Strong distributed systems background.",funding:"$5M Seed (Oct 2025) — Accel (lead), Sandberg Bernthal Venture Partners (Sheryl Sandberg), Neo",github:"N/A — SaaS EdTech. Hundreds of schools. YC W2020 batch.",worked:"Met through mutual friend Christmas Eve 2023. Co-founded Flint March 2024.",thesis:"Michelle's Warp experience gives rare combination: developer-grade product infrastructure skills + growth playbook for technical users. Education scores lower under BSV thesis — regulatory complexity, slow enterprise K-12 sales cycles, budget constraints. Product is strong but market risk is real.",flags:[{t:"Warp founding engineer (0→100K devs)",c:"fg"},{t:"Accel + Sheryl Sandberg backing",c:"fg"},{t:"Education market = slower adoption",c:"fa"},{t:"AI tutoring is crowded (Khanmigo, Photomath)",c:"fa"}]}},
+{name:"Atuin",url:"atuin.sh",track:"track1",bsv:false,scores:[7,6,8,6,5],
+founders:[{n:"Ellie Huxtable",r:"Founder · Open source developer · Rust expert · SF Bay Area"}],
+detail:{exp1:"Ellie Huxtable: Built Atuin as a personal project in Rust to solve her own shell history sync problem. Developer and maker — also builds keyboards, modified iPods, Mastodon instances.",exp2:"Solo founder. No prior institutional operator experience. Exceptional OSS community builder and communicator.",funding:"Seed (undisclosed). GitHub community is primary distribution channel.",github:"~22K+ stars (atuinsh/atuin) — strongest OSS signal in the entire list. Real daily developer usage.",worked:"Solo founder.",thesis:"22K GitHub stars means tens of thousands of developers voluntarily installed and kept using this tool daily. Real pull, not manufactured. Solo founder risk is real, and the path from OSS CLI tool to enterprise business needs more definition. But this is the strongest community signal in the list.",flags:[{t:"22K+ GitHub stars — strongest OSS signal",c:"fg"},{t:"Real daily developer usage",c:"fg"},{t:"Solo founder risk",c:"fa"},{t:"Enterprise monetization path unclear",c:"fa"}]}},
+{name:"Quill Meetings",url:"quillmeetings.com",track:"track2",bsv:false,scores:[7,6,7,6,5],
+founders:[{n:"Rishi Raman",r:"CEO · Co-founder Quill (YC W2020)"},{n:"Shawn Magee",r:"CTO · Co-founder Quill (YC W2020)"}],
+detail:{exp1:"Both: co-founded Quill dashboard/analytics product through YC W2020 batch, SF. SWE backgrounds.",exp2:"Quill Meetings is an evolution from original Quill product toward on-device meeting AI with workflow automation.",funding:"Seed (undisclosed) — Hawk Hill Ventures. Founded 2023.",github:"N/A. On-device local processing is the privacy differentiator.",worked:"✓ Co-founded original Quill together through YC W2020.",thesis:"On-device privacy-first meeting AI is genuinely differentiated from Otter/Fireflies/Granola. YC pedigree + prior co-founding gives co-founder durability. Meeting AI is one of the most competitive productivity categories — Zoom, Teams, and Notion are all competing with native integrations.",flags:[{t:"YC W2020 pedigree",c:"fg"},{t:"On-device privacy differentiator",c:"fg"},{t:"Meeting AI is very crowded",c:"fa"},{t:"Platform bundling risk (Zoom/Teams native)",c:"fa"}]}},
+{name:"Beeble",url:"beeble.ai",track:"track2",bsv:false,scores:[6,7,6,6,5],
+founders:[{n:"Hoon Kim",r:"Co-founder"},{n:"Wonjun Yoon",r:"Co-founder"},{n:"Donghyun Na",r:"Co-founder"},{n:"Bryan Pratte",r:"Co-founder · US Commercial Lead"}],
+detail:{exp1:"Hoon Kim, Wonjun Yoon, Donghyun Na: Computer vision and AI video research backgrounds from Korean R&D institutions. Academic/research colleagues.",exp2:"Bryan Pratte: US business development and commercial operations — provides US market access to Korean technical team.",funding:"Seed (undisclosed). SF-based Korean-founded team.",github:"N/A — real-time AI compositing product. No green screen required.",worked:"Academic / research colleagues from Korea. Bryan joined as US commercial co-founder.",thesis:"No-green-screen AI compositing is technically differentiated. Creator economy + remote work are real tailwinds. 4 co-founders can mean strong execution or diluted decision-making. Key risk: whether this becomes workflow-embedded for professional creators vs. one-time novelty. Adobe, Runway, and Canva all building here.",flags:[{t:"Strong technical differentiator",c:"fg"},{t:"Creator economy tailwind",c:"fg"},{t:"4 co-founders (ownership/decision risk)",c:"fa"},{t:"Adobe/Runway/Canva competition",c:"fa"}]}},
+{name:"Solvely",url:"solvely.ai",track:"track2",bsv:false,scores:[6,6,6,7,3],
+founders:[{n:"Richard Weiqi Zhang",r:"Co-founder · CEO"},{n:"Enpeng Yuan",r:"Co-founder"},{n:"Dr. Nick Yuan",r:"Co-founder · AI Lead"}],
+detail:{exp1:"Richard Zhang: Prior SWE experience (undisclosed). GitHub presence noted. Founded Solvely 2023 as AI homework helper.",exp2:"Dr. Nick Yuan: AI/ML research background. Claude-powered platform. Anthropic published Solvely as a customer case study.",funding:"Seed — Notable Capital. No public amount disclosed.",github:"Private. 5M+ student users across 120+ countries — strong consumer traction.",worked:"Co-founded together 2023.",thesis:"5M+ users across 120 countries is real consumer traction that shouldn't be dismissed. But under BSV thesis, education scores low — K-12 budgets are tight, sales cycles are long, and the AI tutoring space commoditizes quickly. Photomath, Khanmigo, and Socratic all compete. Limited public founder background available.",flags:[{t:"5M+ student users, 120+ countries",c:"fg"},{t:"Notable Capital + Anthropic case study",c:"fg"},{t:"Education = lower BSV priority",c:"fa"},{t:"AI tutoring commoditizing fast",c:"fa"},{t:"Limited founder background signal",c:"fr"}]}},
+{name:"Primitive",url:"primitive.dev",track:"track1",bsv:false,scores:[5,6,5,5,4],
+founders:[{n:"Unknown / Limited public data",r:"Early-stage · Developer workflow AI focus"}],
+detail:{exp1:"Limited public founder information available. Developer tooling / AI workflow focus per website.",exp2:"Background unconfirmed. Note: separate 'Primitive' (fintech AI, Salt Lake City) launched April 2026 — different company.",funding:"Unknown / early stage. No public funding announced.",github:"Unknown / private repositories.",worked:"Unknown.",thesis:"Developer workflow AI is aligned with BSV thesis. But with no visible founder backgrounds, no GitHub traction, and no funding signal, this is impossible to evaluate positively from public sources alone. Would require founder outreach and hands-on product testing to advance in diligence.",flags:[{t:"Developer workflow thesis is right",c:"fg"},{t:"No public founder background data",c:"fr"},{t:"No visible GitHub / OSS traction",c:"fr"},{t:"No funding signal",c:"fr"}]}},
+{name:"Entire",url:"entire.io",track:"track1",bsv:false,scores:[4,5,5,4,4],
+founders:[{n:"Unknown / Limited public data",r:"Early-stage · AI workspace / productivity"}],
+detail:{exp1:"AI workspace / collaborative productivity focus. Minimal public founder information available.",exp2:"Unknown backgrounds.",funding:"Unknown / very early stage.",github:"Unknown.",worked:"Unknown.",thesis:"AI productivity and workspace tools is one of the most crowded enterprise software categories. Without founder signal, product differentiation, or traction data, this is the most difficult company to evaluate positively. Would pass without substantially more diligence.",flags:[{t:"AI productivity theme relevant",c:"fg"},{t:"Very crowded category",c:"fr"},{t:"No founder background data",c:"fr"},{t:"No traction signal",c:"fr"}]}},
+];
+
+const TC=v=>v>=9?{c:'#2a7a52',b:'#e8f5ee'}:v>=7?{c:'#4a8a62',b:'#f0f8f2'}:v>=5?{c:'#b07010',b:'#fff8e8'}:{c:'#c04040',b:'#fef0f0'};
+const tier=s=>s>=85?{l:'S',c:'var(--s)',b:'var(--s-bg)'}:s>=70?{l:'A',c:'var(--a)',b:'var(--a-bg)'}:s>=55?{l:'B',c:'var(--b)',b:'var(--b-bg)'}:{l:'C',c:'var(--c)',b:'var(--c-bg)'};
+const SC=v=>v>=9?'#1a5c3a':v>=7?'#2a7a52':v>=5?'#b07010':'#c04040';
+let sk=0,sd=-1,fk='all',oi=null,W=[35,25,20,15,5];
+const calcT=(s,w)=>{const t=w.reduce((a,b)=>a+b,0);if(!t)return 0;return Math.round(s.reduce((x,v,i)=>x+v*(w[i]/t),0)*10);};
+function gW(){return[0,1,2,3,4].map(i=>parseFloat(document.getElementById('w'+i).value)||0);}
+function recalc(){W=gW();updW();render();}
+function updW(){const t=gW().reduce((a,b)=>a+b,0);const e=document.getElementById('wt');e.textContent=t;e.className=t===100?'wok':'wbad';}
+function setF(k,el){fk=k;document.querySelectorAll('.fbtn').forEach(b=>b.classList.toggle('on',b===el));oi=null;render();}
+function srt(k){if(sk===k)sd*=-1;else{sk=k;sd=-1;}oi=null;render();}
+function filt(){return D.filter(d=>{if(fk==='track1')return d.track==='track1';if(fk==='track2')return d.track==='track2';if(fk==='bsv')return d.bsv;if(fk==='s')return calcT(d.scores,W)>=85;if(fk==='a')return calcT(d.scores,W)>=70;return true;});}
+function srtd(data){return[...data].sort((a,b)=>{if(sk==='name')return a.name.localeCompare(b.name)*sd;if(sk==='total')return(calcT(b.scores,W)-calcT(a.scores,W))*sd;return(b.scores[sk]-a.scores[sk])*sd;});}
+const DIMS=[{l:'Founder Fit',c:'var(--c1)'},{l:'Market Opp',c:'var(--c2)'},{l:'Product',c:'var(--c3)'},{l:'Execution',c:'var(--c4)'},{l:'Education',c:'var(--c5)'}];
+function render(){
+const data=srtd(filt());
+const tb=document.getElementById('tb');tb.innerHTML='';
+data.forEach((d,ri)=>{
+const total=calcT(d.scores,W);const t=tier(total);const isO=oi===ri;
+const tr=document.createElement('tr');if(isO)tr.classList.add('exp');
+tr.onclick=()=>{oi=oi===ri?null:ri;render();};
+tr.innerHTML=`<td class="rnk"><span class="${ri===0?'r1':''}">${ri+1}</span></td>
+<td class="co"><div class="co-name">${d.name}</div><div class="co-url">${d.url}</div><div><span class="co-track ${d.track}">${d.track==='track1'?'Track 1':'Track 2'}</span>${d.bsv?'<span class="bsv-badge">BSV</span>':''}</div></td>
+<td class="founders">${d.founders.map(f=>`<div class="fn">${f.n}</div><div class="frole">${f.r}</div>`).join('<div style="height:4px"></div>')}</td>
+${d.scores.map(s=>{const tc=TC(s);return`<td class="sc"><span class="sv" style="color:${tc.c}">${s}</span><div class="bar"><div class="bf" style="width:${s*10}%;background:${tc.c}"></div></div></td>`;}).join('')}
+<td class="tot"><div class="tb" style="color:${t.c};border-color:${t.c};background:${t.b}">${total}</div></td>
+<td style="text-align:center;vertical-align:middle"><span class="tier-b" style="background:${t.b};color:${t.c}">${t.l}</span></td>`;
+tb.appendChild(tr);
+if(isO){
+const etr=document.createElement('tr');etr.className='exp-tr show';
+const notes=[d.detail.exp1,d.detail.exp2,d.detail.funding,d.detail.github,d.detail.worked];
+const cards=DIMS.map((dim,i)=>`<div class="ec"><div class="ec-lbl" style="color:${dim.c}">${dim.l} <span style="color:var(--faint)">(${W[i]}%)</span></div><div class="ec-val" style="color:${SC(d.scores[i])}">${d.scores[i]}<span style="font-size:11px;color:var(--faint)">/10</span></div><div class="bar" style="margin-top:5px"><div class="bf" style="width:${d.scores[i]*10}%;background:${SC(d.scores[i])}"></div></div><div class="ec-note">${notes[i]||''}</div></div>`).join('');
+const fh=(d.detail.flags||[]).map(f=>`<span class="flag ${f.c}">${f.t}</span>`).join('');
+etr.innerHTML=`<td colspan="10" class="exp-td"><div class="exp-grid">${cards}</div><div class="exp-thesis"><div class="et-lbl">Investment Rationale</div><div class="et-txt">${d.detail.thesis}</div></div>${fh?`<div class="flags">${fh}</div>`:''}</td>`;
+tb.appendChild(etr);
+}});
+document.getElementById('sn').textContent=data.length;
+document.getElementById('stop').textContent=data[0]?.name||'—';
+document.getElementById('ss').textContent=data.filter(d=>calcT(d.scores,W)>=85).length;
+document.getElementById('sa').textContent=data.filter(d=>{const t=calcT(d.scores,W);return t>=70&&t<85;}).length;
+const avg=data.length?Math.round(data.reduce((s,d)=>s+calcT(d.scores,W),0)/data.length):'—';
+document.getElementById('savg').textContent=avg;
+updW();
+}
+[0,1,2,3,4].forEach(i=>document.getElementById('w'+i).addEventListener('input',updW));
+render();
+</script>
+</body>
+</html>
