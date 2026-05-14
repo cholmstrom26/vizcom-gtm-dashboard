@@ -125,6 +125,7 @@ td.tot{text-align:center;vertical-align:middle}
   <th onclick="srt(3)">Execution</th>
   <th onclick="srt(4)">Education</th>
   <th onclick="srt('total')">Score</th>
+  <th>Tier</th>
 </tr></thead>
 <tbody id="tb"></tbody>
 </table>
@@ -214,13 +215,14 @@ tr.innerHTML=`<td class="rnk"><span class="${ri===0?'r1':''}">${ri+1}</span></td
 <td class="founders">${d.founders.map(f=>`<div class="fn">${f.n}</div><div class="frole">${f.r}</div>`).join('<div style="height:4px"></div>')}</td>
 ${d.scores.map(s=>{const tc=TC(s);return`<td class="sc"><span class="sv" style="color:${tc.c}">${s}</span><div class="bar"><div class="bf" style="width:${s*10}%;background:${tc.c}"></div></div></td>`;}).join('')}
 <td class="tot"><div class="tb" style="color:${t.c};border-color:${t.c};background:${t.b}">${total}</div></td>
+<td style="text-align:center;vertical-align:middle"><span class="tier-b" style="background:${t.b};color:${t.c}">${t.l}</span></td>`;
 tb.appendChild(tr);
 if(isO){
 const etr=document.createElement('tr');etr.className='exp-tr show';
 const notes=[d.detail.exp1,d.detail.exp2,d.detail.funding,d.detail.github,d.detail.worked];
 const cards=DIMS.map((dim,i)=>`<div class="ec"><div class="ec-lbl" style="color:${dim.c}">${dim.l} <span style="color:var(--faint)">(${W[i]}%)</span></div><div class="ec-val" style="color:${SC(d.scores[i])}">${d.scores[i]}<span style="font-size:11px;color:var(--faint)">/10</span></div><div class="bar" style="margin-top:5px"><div class="bf" style="width:${d.scores[i]*10}%;background:${SC(d.scores[i])}"></div></div><div class="ec-note">${notes[i]||''}</div></div>`).join('');
 const fh=(d.detail.flags||[]).map(f=>`<span class="flag ${f.c}">${f.t}</span>`).join('');
-etr.innerHTML=`<td colspan="9" class="exp-td"><div class="exp-grid">${cards}</div><div class="exp-thesis"><div class="et-lbl">Investment Rationale</div><div class="et-txt">${d.detail.thesis}</div></div>${fh?`<div class="flags">${fh}</div>`:''}</td>`;
+etr.innerHTML=`<td colspan="10" class="exp-td"><div class="exp-grid">${cards}</div><div class="exp-thesis"><div class="et-lbl">Investment Rationale</div><div class="et-txt">${d.detail.thesis}</div></div>${fh?`<div class="flags">${fh}</div>`:''}</td>`;
 tb.appendChild(etr);
 }});
 document.getElementById('sn').textContent=data.length;
